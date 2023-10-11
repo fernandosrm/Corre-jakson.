@@ -3,9 +3,13 @@ var pathImg,boyImg;
 var coin,coinImg
 var coinGroup
 var boyGroup
+
 var score
-var PLAY
-var gameState = PLAY
+
+var bomb, bombImg,bombGroup
+
+
+
 function preload(){
   pathImg = loadImage("path.png")
   //loadImage de path (camino)
@@ -13,7 +17,7 @@ function preload(){
   //loadAnimation de boy (niño)
   coinImg = loadImage("coin.png")
   //Coin
-  
+  bombImg = loadImage("bomb.png")
   
   
 }
@@ -29,13 +33,12 @@ function setup(){
 path.x=path.width /2
 
 
-
-
 //crear sprite de boy (niño)
 boy = createSprite(150,300,200,200)
 //agregar animación para boy
 boy.addAnimation("corriendo boy", boyImg)
 boy.scale=0.7;
+bombGroup = createGroup()
 coinGroup = createGroup()
 boyGroup = createGroup()
 // crear  left Boundary (límite izquierdo)
@@ -46,20 +49,26 @@ leftBoundary.visible = false
 rightBoundary=createSprite(320,0,100,2000);
 //establecer visibilidad como false (falso) para límite izquierdo
 rightBoundary.visible = false
-spwanCoins()
+
 //score
  score = 0
 
 }
 
 function draw() {
+  
   background("black");
+
   text("coins" + score ,280 ,400)
+//ver la distancia de colision
+  //boy.debug=true
+  boy.setCollider("rectangle",0,0,40,120)
   
   
+ 
+
   path.velocityY = 4;
   
-
    
   // boy moviéndose en el eje X con el mouse
   boy.x=World.mouseX
@@ -77,35 +86,51 @@ function draw() {
   
 
  spwanCoins()
- 
+ spwanBomb()
 
   drawSprites();
-
 }
 
 
+
 function spwanCoins() {
-  if (frameCount % 60 === 0) {
-    coin = createSprite(150, 200, 100, 100);
+  if (frameCount % 100 === 0) {
+    var coin = createSprite(150, 200, 100, 100);
     coin.y = Math.round(random(10, 60));
+    coin.x = Math.round(random(270,50))
     coin.addImage(coinImg);
     coin.scale = 0.4;
     coin.velocityY = 2;
     coinGroup.add(coin);
+    coin.lifetime = 200
+  }
 
 
-if(coin.isTouching(boy)) {
-     coin.destroy();
+  // Verificar si el personaje toca una moneda
+  for (var i = 0; i < coinGroup.length; i++) {
+    if (boy.isTouching(coinGroup.get(i))) {
       score = score + 1;
-  }                            
-}    
-} 
+      coinGroup.get(i).destroy();
+    }
+  }
+}
 
-
-
-
-
-
-
-
-
+function spwanBomb(){
+  if(frameCount % 180 === 0){
+    bomb = createSprite(150,200,100,100)
+    bomb.y = Math.round(random(10, 60))
+    bomb.x = Math.round(random(267,50))
+    bomb.addImage(bombImg)
+    bomb.scale=0.1
+    bomb.velocityY = 2
+    bombGroup.add(bomb)
+    bomb.lifetime = 200
+   }
+  
+   for (var i = 0; i < bombGroup.length; i++) {
+    if (boy.isTouching(bombGroup.get(i))) {
+      bombGroup.get(i).destroy();
+      score = score - 1
+    }
+  }
+}
